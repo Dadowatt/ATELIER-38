@@ -1,9 +1,13 @@
 import shutil
 import os
+import requests
 
+from dotenv import load_dotenv
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import chromadb
+
+load_dotenv()
 
 # -----------------------------
 # 1. Extraction du PDF
@@ -103,3 +107,29 @@ results = collection.query(
 print("\n--- TEST RAG ---")
 print(f"Question : {question}")
 print(f"Résultat : {results['documents'][0][0]}")
+
+
+# -----------------------------
+# 7. Notification Discord
+# -----------------------------
+
+webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
+
+if webhook_url:
+    message = {
+        "content": (
+            "📄 **Document prêt pour le RAG**\n\n"
+            f"Document : {os.path.basename(pdf_path)}\n"
+            f"Chunks créés : {len(chunks)}\n"
+            "Statut : indexé dans ChromaDB"
+        )
+    }
+
+    response = requests.post(webhook_url, json=message)
+
+    if response.status_code == 204:
+        print("\nNotification Discord envoyée avec succès !")
+    else:
+        print(f"\nErreur Discord : {response.status_code}")
+else:
+    print("\nWebhook Discord non configuré.")
