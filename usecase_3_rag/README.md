@@ -26,8 +26,8 @@ Il contient notamment :
 
 ## Paramètres du chunking
 
-- Taille maximale : 500 tokens environ
-- Overlap : 100 tokens
+- Taille des chunks : 500 mots environ
+- Overlap : 100 mots
 
 ## Modèle d'embeddings
 
