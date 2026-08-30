@@ -1,0 +1,286 @@
+{
+  "name": "UC4 - Agent de veille technique",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        64
+      ],
+      "id": "25354e26-6d05-4046-8fc0-5ade6d4d9971",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://dev.to/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        -16
+      ],
+      "id": "4670fd8b-7b22-4001-9b53-18c88c5e6d18",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/TheHackersNews",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        288,
+        160
+      ],
+      "id": "4805c5a6-dfd5-4c6d-a991-4cab226f6a8c",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        784,
+        128
+      ],
+      "id": "c89edd72-2e39-493a-9543-2a1a51e5e419",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        512,
+        160
+      ],
+      "id": "6f083f4b-d055-4891-b10c-a88227c55857",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -10.3925149589777
+      ],
+      "id": "b549e0cd-60a7-4d3d-b1a8-49792840b831",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const articles = $input.all().map(item => {\n  const data = item.json;\n\n  return {\n    title: data.title || \"\",\n    link: data.link || \"\",\n    published: data.pubDate || data.isoDate || \"\",\n    summary: data.contentSnippet || data.description || data.content || \"\"\n  };\n});\n\nreturn [\n  {\n    json: {\n      articles: articles\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -48
+      ],
+      "id": "b450b25b-cf29-45ca-b969-d008d32906f0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un agent de veille technologique.\n\nÀ partir de la liste d'articles fournie, réalise une veille technologique quotidienne.\n\nOBJECTIFS :\n\n1. Analyse tous les articles.\n2. Élimine les doublons.\n3. Élimine les articles hors sujet.\n4. Priorise :\n   - Intelligence artificielle\n   - développement logiciel\n   - cybersécurité\n   - cloud\n   - data\n   - automatisation\n   - nouvelles technologies\n5. Sélectionne exactement les 3 actualités les plus pertinentes.\n6. Ne fabrique aucune information.\n7. Le résultat doit faire MOINS DE 1500 CARACTÈRES au total.\n8. Sois extrêmement concis.\n\nPour chaque actualité, indique uniquement :\n- le titre\n- la source\n- un résumé très court\n- pourquoi c'est important\n- le lien\n\nLe résumé doit faire UNE seule phrase.\nL'explication \"Pourquoi c'est important\" doit faire UNE seule phrase.\nLe titre doit rester court si nécessaire.\n\nRetourne UNIQUEMENT du Markdown.\n\nFormat obligatoire :\n\n# 📰 Veille technologique\n\n## 1. [Titre]\n\n**Source :** [Source]\n\n**Résumé :** [Une phrase]\n\n**Pourquoi :** [Une phrase]\n\n**Lien :** [URL]\n\n## 2. [Titre]\n\n**Source :** [Source]\n\n**Résumé :** [Une phrase]\n\n**Pourquoi :** [Une phrase]\n\n**Lien :** [URL]\n\n## 3. [Titre]\n\n**Source :** [Source]\n\n**Résumé :** [Une phrase]\n\n**Pourquoi :** [Une phrase]\n\n**Lien :** [URL]\n\nVoici les articles à analyser :\n\n{{ JSON.stringify($json.articles) }}\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        896,
+        -46.14334457578558
+      ],
+      "id": "985b7814-41d6-4604-8c0b-e83519e5a10d",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        208
+      ],
+      "id": "fef9092b-9643-48b4-8593-3a416e4ff11d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "QGgq9PIS50KjVVd2",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1543348514808008724/QAeYRLJ_rqzKRLP1wnzEkRmlI7KP0T66H5M2qLnT_nV4zjkdlecE-Pt9jAX-fFpulXOw",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1264,
+        -48
+      ],
+      "id": "5afe3bf8-838c-456f-93b5-756266dceadb",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read1": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d29090e3-5497-40f9-b686-6ee2be2fb19f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "09b5e5856d9398727f1e6de5cf04de88f977d881f3a39aecbc62031f69f79937"
+  },
+  "nodeGroups": [],
+  "id": "s3KlLw9u3cDyMAIS",
+  "tags": []
+}
